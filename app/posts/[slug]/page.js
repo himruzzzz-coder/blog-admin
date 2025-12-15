@@ -1,20 +1,31 @@
+// app/posts/[slug]/page.js
+
+// ✅ IMPORT BOTH FUNCTIONS HERE
 import { getPost, getAllPosts } from '@/lib/github';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { marked } from 'marked';
 
-export const revalidate = 60; // Revalidate every 60 seconds
+// Revalidate every 60 seconds
+export const revalidate = 60;
 
-// Generate static params for all posts
+// 1. Generate static params (Pre-builds the pages)
 export async function generateStaticParams() {
   const posts = await getAllPosts();
+  
+  // Safety check: if posts is empty or undefined
+  if (!posts) return [];
+
   return posts.map((post) => ({
     slug: post.slug,
   }));
 }
 
+// 2. Generate Metadata (SEO)
 export async function generateMetadata({ params }) {
-  const post = await getPost(params.slug);
+  // ✅ Next.js 16: Await params
+  const { slug } = await params;
+  const post = await getPost(slug);
   
   if (!post) {
     return {
@@ -28,8 +39,11 @@ export async function generateMetadata({ params }) {
   };
 }
 
+// 3. The Page Component
 export default async function PostPage({ params }) {
-  const post = await getPost(params.slug);
+  // ✅ Next.js 16: Await params
+  const { slug } = await params;
+  const post = await getPost(slug);
 
   if (!post) {
     notFound();
