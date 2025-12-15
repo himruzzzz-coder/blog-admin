@@ -1,65 +1,39 @@
-// app/posts/[slug]/page.js
-
-// ✅ IMPORT BOTH FUNCTIONS HERE
 import { getPost, getAllPosts } from '@/lib/github';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { marked } from 'marked';
 
-// Revalidate every 60 seconds
 export const revalidate = 60;
 
-// 1. Generate static params (Pre-builds the pages)
 export async function generateStaticParams() {
   const posts = await getAllPosts();
-  
-  // Safety check: if posts is empty or undefined
   if (!posts) return [];
-
-  return posts.map((post) => ({
-    slug: post.slug,
-  }));
+  return posts.map((post) => ({ slug: post.slug }));
 }
 
-// 2. Generate Metadata (SEO)
 export async function generateMetadata({ params }) {
-  // ✅ Next.js 16: Await params
   const { slug } = await params;
   const post = await getPost(slug);
-  
-  if (!post) {
-    return {
-      title: 'Post Not Found',
-    };
-  }
-
-  return {
-    title: post.title,
-    description: post.excerpt || post.title,
-  };
+  if (!post) return { title: 'Not Found' };
+  return { title: post.title, description: post.excerpt };
 }
 
-// 3. The Page Component
 export default async function PostPage({ params }) {
-  // ✅ Next.js 16: Await params
   const { slug } = await params;
   const post = await getPost(slug);
 
-  if (!post) {
-    notFound();
-  }
+  if (!post) notFound();
 
-  // Convert markdown to HTML
   const htmlContent = marked(post.content);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-[#09090b]">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+      <header className="border-b border-white/10 bg-[#09090b] sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-4 py-4">
           <Link
             href="/"
-            className="text-blue-600 hover:text-blue-800 font-semibold"
+            className="text-sm text-gray-400 hover:text-white transition-colors flex items-center"
           >
             ← Back to Blog
           </Link>
@@ -67,63 +41,48 @@ export default async function PostPage({ params }) {
       </header>
 
       {/* Article */}
-      <article className="max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-md p-8 md:p-12">
-          {/* Title */}
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {post.title}
-          </h1>
-
-          {/* Meta */}
-          <div className="flex items-center text-gray-600 mb-8 pb-8 border-b">
-            {post.author && (
-              <span className="mr-4">By {post.author}</span>
-            )}
-            {post.date && (
-              <time dateTime={post.date}>
-                {new Date(post.date).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
+      <main className="flex-grow max-w-3xl mx-auto px-4 py-12 w-full">
+        <article>
+          <header className="mb-10 text-center">
+             <div className="text-sm text-blue-500 mb-4 font-medium">
+                {post.date && new Date(post.date).toLocaleDateString('en-US', {
+                  year: 'numeric', month: 'long', day: 'numeric',
                 })}
-              </time>
+            </div>
+            <h1 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
+              {post.title}
+            </h1>
+            {post.author && (
+              <div className="text-gray-400 text-sm">
+                By {post.author}
+              </div>
             )}
-          </div>
+          </header>
 
-          {/* Content */}
           <div
-            className="prose prose-lg max-w-none
-              prose-headings:font-bold prose-headings:text-gray-900
-              prose-h2:text-3xl prose-h2:mt-8 prose-h2:mb-4
-              prose-h3:text-2xl prose-h3:mt-6 prose-h3:mb-3
-              prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-4
-              prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
-              prose-strong:text-gray-900 prose-strong:font-semibold
-              prose-ul:my-6 prose-ol:my-6
-              prose-li:text-gray-700 prose-li:my-2
-              prose-img:rounded-lg prose-img:shadow-md prose-img:my-8
-              prose-code:text-pink-600 prose-code:bg-pink-50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded
-              prose-pre:bg-gray-900 prose-pre:text-gray-100"
+            className="prose prose-lg prose-invert max-w-none
+              prose-headings:text-white prose-headings:font-bold
+              prose-a:text-blue-500 prose-a:no-underline hover:prose-a:underline
+              prose-strong:text-white
+              prose-img:rounded-xl prose-img:shadow-lg
+              prose-code:text-pink-300 prose-code:bg-white/5 prose-code:rounded prose-code:px-1
+              prose-pre:bg-[#18181b] prose-pre:border prose-pre:border-white/10"
             dangerouslySetInnerHTML={{ __html: htmlContent }}
           />
-        </div>
+        </article>
 
-        {/* Back Link */}
-        <div className="mt-8 text-center">
-          <Link
-            href="/"
-            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
-          >
-            ← Back to All Posts
-          </Link>
+        <div className="mt-16 pt-8 border-t border-white/10 text-center">
+            <Link href="/" className="text-gray-500 hover:text-white text-sm">
+                View all posts
+            </Link>
         </div>
-      </article>
+      </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t mt-12">
-        <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <p className="text-center text-gray-600 text-sm">
-            © {new Date().getFullYear()} Company Blog. All rights reserved.
+      <footer className="border-t border-white/10 bg-[#09090b] py-8 mt-12">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <p className="text-gray-600 text-xs">
+            © {new Date().getFullYear()} Blog. All rights reserved.
           </p>
         </div>
       </footer>

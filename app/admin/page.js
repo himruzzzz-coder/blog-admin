@@ -12,7 +12,6 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Check if already authenticated
     const auth = sessionStorage.getItem('admin_auth');
     if (auth === 'true') {
       setAuthenticated(true);
@@ -51,13 +50,11 @@ export default function AdminDashboard() {
     if (!confirm(`Are you sure you want to delete "${slug}"?`)) {
       return;
     }
-
     try {
       await deletePost(slug);
       setPosts(posts.filter(p => p.slug !== slug));
-      alert('Post deleted successfully!');
     } catch (err) {
-      alert('Failed to delete post');
+      alert('Failed to delete');
     }
   };
 
@@ -67,40 +64,41 @@ export default function AdminDashboard() {
     setPassword('');
   };
 
-  // Login Screen
+  // --- LOGIN SCREEN ---
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-md p-8 w-full max-w-md">
-          <h1 className="text-2xl font-bold mb-6 text-center">Admin Login</h1>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-[#09090b]">
+        <div className="w-full max-w-md bg-[#18181b] border border-white/10 rounded-xl p-8 shadow-2xl">
+          <h1 className="text-2xl font-bold text-white text-center mb-6">Admin Login</h1>
           
-          <form onSubmit={handleLogin}>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Password</label>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter admin password"
+                className="w-full bg-[#09090b] border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                placeholder="Password"
                 required
               />
             </div>
 
             {error && (
-              <div className="mb-4 text-red-600 text-sm">{error}</div>
+              <div className="text-red-400 text-sm text-center bg-red-500/10 py-2 rounded">
+                {error}
+              </div>
             )}
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+              className="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition-colors"
             >
-              Login
+              Sign In
             </button>
           </form>
-
+          
           <div className="mt-6 text-center">
-            <Link href="/" className="text-blue-600 hover:underline">
+            <Link href="/" className="text-sm text-gray-500 hover:text-white">
               ← Back to Blog
             </Link>
           </div>
@@ -109,23 +107,19 @@ export default function AdminDashboard() {
     );
   }
 
-  // Admin Dashboard
+  // --- DASHBOARD ---
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+    <div className="min-h-screen bg-[#09090b] pb-20">
+      <header className="bg-[#18181b] border-b border-white/10">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-lg font-bold text-white">Dashboard</h1>
           <div className="flex gap-4">
-            <Link
-              href="/"
-              className="px-4 py-2 text-blue-600 hover:text-blue-800"
-            >
-              View Blog
+            <Link href="/" className="px-4 py-2 text-sm text-gray-400 hover:text-white">
+              View Site
             </Link>
             <button
               onClick={handleLogout}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              className="px-4 py-2 text-sm bg-red-500/10 text-red-400 rounded-md hover:bg-red-500/20"
             >
               Logout
             </button>
@@ -133,96 +127,52 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Create Button */}
-        <div className="mb-6">
-          <Link
-            href="/admin/new"
-            className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-semibold"
-          >
-            + Create New Post
-          </Link>
-        </div>
-
-        {/* Posts List */}
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <p className="mt-4 text-gray-600">Loading posts...</p>
-          </div>
-        ) : posts.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-600 mb-4">No posts yet. Create your first one!</p>
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl font-bold text-white">Posts</h2>
             <Link
               href="/admin/new"
-              className="text-blue-600 hover:underline font-semibold"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium text-sm"
             >
-              Create First Post →
+              + Create New
             </Link>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-12 text-gray-500">Loading...</div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-12 border border-dashed border-white/10 rounded-xl">
+            <p className="text-gray-500 mb-4">No posts found.</p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div className="bg-[#18181b] border border-white/10 rounded-xl overflow-hidden">
+            <table className="min-w-full divide-y divide-white/5">
+              <thead className="bg-white/5">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Title
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Author
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase">Title</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase">Date</th>
+                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-white/5">
                 {posts.map((post) => (
-                  <tr key={post.slug} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {post.title} </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">
-                    {new Date(post.date).toLocaleDateString()}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">{post.author}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link
-                    href={`/posts/${post.slug}`}
-                    className="text-blue-600 hover:text-blue-900 mr-4"
-                    target="_blank"
-                  >
-                    View
-                  </Link>
-                  <Link
-                    href={`/admin/edit/${post.slug}`}
-                    className="text-green-600 hover:text-green-900 mr-4"
-                  >
-                    Edit
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(post.slug)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    )}
-  </main>
-</div>
-);
+                  <tr key={post.slug} className="hover:bg-white/5 transition-colors">
+                    <td className="px-6 py-4 text-sm font-medium text-white">{post.title}</td>
+                    <td className="px-6 py-4 text-sm text-gray-400">
+                        {new Date(post.date).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 text-right text-sm">
+                      <Link href={`/posts/${post.slug}`} className="text-gray-400 hover:text-white mr-4" target="_blank">View</Link>
+                      <Link href={`/admin/edit/${post.slug}`} className="text-blue-400 hover:text-blue-300 mr-4">Edit</Link>
+                      <button onClick={() => handleDelete(post.slug)} className="text-red-400 hover:text-red-300">Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </main>
+    </div>
+  );
 }
